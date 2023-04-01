@@ -19,6 +19,11 @@ register(
 )
 
 register(
+    env_id='limit-holdem-collaborative',
+    entry_point='rlcard.envs.limitholdem:LimitholdemCollaborativeEnv',
+)
+
+register(
     env_id='no-limit-holdem',
     entry_point='rlcard.envs.nolimitholdem:NolimitholdemEnv',
 )
