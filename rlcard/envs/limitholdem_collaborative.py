@@ -5,28 +5,30 @@ from collections import OrderedDict
 
 import rlcard
 from rlcard.envs import Env
-from rlcard.games.limitholdem import Game
+from rlcard.games.limitholdem_collaborative import Game
 
 DEFAULT_GAME_CONFIG = {
-        'game_num_players': 2,
+        'game_num_players': 3,
         }
 
 class LimitholdemCollaborativeEnv(Env):
     ''' Limitholdem Environment
+    This version will support only 3 players with players indexed 0,1,2.
+    Players 0 and 1 are collaborating against Player 2. 
     '''
 
     def __init__(self, config):
         ''' Initialize the Limitholdem environment
         '''
-        self.name = 'limit-holdem'
+        self.name = 'limit-holdem-collaborative'
         self.default_game_config = DEFAULT_GAME_CONFIG
-        self.game = Game()
+        self.game = Game(num_players=config['game_num_players'])
         super().__init__(config)
         self.actions = ['call', 'raise', 'fold', 'check']
-        self.state_shape = [[72] for _ in range(self.num_players)]
+        self.state_shape = [[76] for _ in range(self.num_players)]
         self.action_shape = [None for _ in range(self.num_players)]
 
-        with open(os.path.join(rlcard.__path__[0], 'games/limitholdem/card2index.json'), 'r') as file:
+        with open(os.path.join(rlcard.__path__[0], 'games/limitholdem_collaborative/card2index.json'), 'r') as file:
             self.card2index = json.load(file)
 
     def _get_legal_actions(self):
@@ -58,10 +60,13 @@ class LimitholdemCollaborativeEnv(Env):
         raise_nums = state['raise_nums']
         cards = public_cards + hand
         idx = [self.card2index[card] for card in cards]
-        obs = np.zeros(72)
+        obs = np.zeros(76)
         obs[idx] = 1
         for i, num in enumerate(raise_nums):
-            obs[52 + i * 5 + num] = 1
+            obs[52 + i * 6 + num] = 1
+            #TODO("Set 6th bit to 1 if raised by collab agent")
+
+
         extracted_state['obs'] = obs
 
         extracted_state['raw_obs'] = state

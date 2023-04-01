@@ -18,7 +18,7 @@ class LimitHoldemCollaborativeGame:
 
         # Small blind and big blind
         self.small_blind = 1
-        self.big_blind = 2 * self.small_blind
+        self.big_blind =  2 * self.small_blind
 
         # Raise amount and allowed times
         self.raise_amount = self.big_blind
@@ -27,7 +27,14 @@ class LimitHoldemCollaborativeGame:
         self.num_players = num_players
 
         # Save betting history
+        """
+        [3] -> [0 1 0] ---(state_extraction(p_idx))--> 1 if p_idx == 0 and raise_by[1] or p_idx == 1 and raise_by[0] 
+        [2] -> [1 1 0]
+        [3] -> [1 1 0]
+        [1] -> [0 1 1]
+        """
         self.history_raise_nums = [0 for _ in range(4)]
+        self.history_raise_by = [[0 for _ in range(num_players)] for _ in range(4)]
 
         self.dealer = None
         self.players = None
@@ -126,6 +133,7 @@ class LimitHoldemCollaborativeGame:
             p = deepcopy(self.public_cards)
             ps = deepcopy(self.players)
             rn = copy(self.history_raise_nums)
+            #TODO("Copy raised by which player array and append")
             self.history.append((r, b, r_c, d, p, ps, rn))
 
         # Then we proceed to the next round
@@ -133,6 +141,8 @@ class LimitHoldemCollaborativeGame:
 
         # Save the current raise num to history
         self.history_raise_nums[self.round_counter] = self.round.have_raised
+
+        #TODO(Populate raised by which player array)
 
         # If a round is over, we deal more public cards
         if self.round.is_over():
@@ -165,6 +175,7 @@ class LimitHoldemCollaborativeGame:
             (bool): True if the game steps back successfully
         """
         if len(self.history) > 0:
+            #TODO("ADD raised by which player array")
             self.round, self.game_pointer, self.round_counter, self.dealer, self.public_cards, \
                 self.players, self.history_raises_nums = self.history.pop()
             return True
@@ -212,7 +223,9 @@ class LimitHoldemCollaborativeGame:
         legal_actions = self.get_legal_actions()
         state = self.players[player].get_state(self.public_cards, chips, legal_actions)
         state['raise_nums'] = self.history_raise_nums
+        
         #TODO("Add raised by which player")
+        state['raise_by_collaborator'] = None
 
         return state
 
